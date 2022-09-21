@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<fsm
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="fsm.xsd"
+        name="TCP/IP" author="DLM" version="0.1b" implClass="TCPIP_StateMachine">
+    <state name="closed" >
+        <event name="reset" resultState="closed" handlerFunction="Reset"/>
+        <event name="passive_open" resultState="listen" handlerFunction="PassiveOpen"/>
+    </state>
+    <state name="listen">
+        <event name="syn/syn+ack" resultState="syn_received" handlerFunction="SynSynPlusAck"/>
+        <event name="send/syn" resultState="syn_sent" handlerFunction="SendSyn"/>
+    </state>
+    <state name="syn_received">
+        <event name="close/fin" resultState="close_fin_1" handlerFunction="CloseFin"/>
+        <event name="ack" resultState="established" handlerFunction="Ack"/>
+    </state>
+    <state name="syn_sent">
+        <event name="syn_syn+ack" resultState="syn_received" handlerFunction="SynSynPlusAck"/>
+        <event name="syn+ack/ack" resultState="established" handlerFunction="SynPlusAckAck"/>
+        <event name="close" resultState="closed" handlerFunction="Close"/>
+        <event name="timeout" resultState="closed" handlerFunction="TimeOut"/>
+        <event name="reset" resultState="closed" handlerFunction="Reset"/>
+    </state>
+    <state name="established">
+        <event name="close/fin" resultState="fin_wait_1" handlerFunction="CloseFin"/>
+        <event name="fin/ack" resultState="close_wait" handlerFunction="FinAck"/>
+    </state>
+    <state name="fin_wait_1" >
+        <event name="fin/ack" resultState="closing" handlerFunction="FinAck"/>
+        <event name="fin_ack/ack" resultState="timed_wait" handlerFunction="Fin_AckAck"/>
+        <event name="ack" resultState="fin_wait_2" handlerFunction="Ack"/>
+    </state>
+    <state name="close_wait" >
+        <event name="close/fin" resultState="last_ack" handlerFunction="CloseFin"/>
+    </state>
+    <state name="closing" >
+        <event name="ack" resultState="timed_wait" handlerFunction="Ack"/>
+    </state>
+    <state name="in_wait_2" >
+        <event name="fin/ack" resultState="timed_wait" handlerFunction="FinAck"/>
+    </state>
+    <state name="last_ack" >
+        <event name="ack/" resultState="closed" handlerFunction="Ack"/>
+    </state>
+    <state name="timed_wait" >
+        <event name="timeout" resultState="closed" handlerFunction="Timeout"/>
+    </state>
+</fsm>
