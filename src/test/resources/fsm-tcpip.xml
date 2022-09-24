@@ -2,7 +2,7 @@
 <fsm
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="fsm.xsd"
-        name="TCP/IP" author="DLM" version="0.1b" implClass="TCPIP_StateMachine">
+        name="TCP/IP" author="DLM" version="0.1b" package="com.cobbinterwebs.fsm.tcpip" implClass="TCPIP_StateMachine">
     <state name="closed" >
         <event name="reset" resultState="closed" handlerFunction="Reset"/>
         <event name="passive_open" resultState="listen" handlerFunction="PassiveOpen"/>
@@ -12,7 +12,7 @@
         <event name="send/syn" resultState="syn_sent" handlerFunction="SendSyn"/>
     </state>
     <state name="syn_received">
-        <event name="close/fin" resultState="close_fin_1" handlerFunction="CloseFin"/>
+        <event name="close/fin" resultState="fin_wait_1" handlerFunction="CloseFin"/>
         <event name="ack" resultState="established" handlerFunction="Ack"/>
     </state>
     <state name="syn_sent">
@@ -37,7 +37,7 @@
     <state name="closing" >
         <event name="ack" resultState="timed_wait" handlerFunction="Ack"/>
     </state>
-    <state name="in_wait_2" >
+    <state name="fin_wait_2" >
         <event name="fin/ack" resultState="timed_wait" handlerFunction="FinAck"/>
     </state>
     <state name="last_ack" >

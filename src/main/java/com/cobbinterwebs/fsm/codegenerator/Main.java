@@ -18,11 +18,13 @@ public class Main {
     private static final int CL_INPUT_FILE_IDX = 0;
     private static final int CL_OUTPUT_FOLDER_IDX = 1;
 
+    String path = null;
+    String packageName = null;
     String implName = null;
     String stateName = null;
-    Document doc = null;
+    static Document doc = null;
 
-    Map handleFunctionNames = new HashMap<String,String>();
+    Map<String, String> handleFunctionNames = new HashMap<String,String>();
 
     String inputFileName = null;
 
@@ -44,6 +46,8 @@ public class Main {
        Main generator = new Main(fileNames[CL_INPUT_FILE_IDX],fileNames[CL_OUTPUT_FOLDER_IDX]);
         try {
             generator.openInputFile();
+            generator.initPackageClassVars();
+            generator.initFolderStructure();
             generator.openOutputFile();
             generator.generateCode();
         } catch (ParserConfigurationException e) {
@@ -60,6 +64,32 @@ public class Main {
         }
     }
 
+    private void initFolderStructure() throws IOException {
+		path = outputFolderName + File.separatorChar;
+		path = path + packageName.replace('.', '/');
+		path = path + File.separatorChar;
+		File filePath = new File(path);
+		
+		if(filePath.exists()) {
+			System.out.println("Directory already exists: " + filePath.getCanonicalPath());
+			return;
+		}
+		
+		boolean status = filePath.mkdirs();
+		
+		if(status) {
+			System.out.println("Directory created successfully");
+		} else {
+			System.out.println("Sorry couldnt create specified directory");
+			throw new IOException();
+		}
+	}
+
+	private void initPackageClassVars() {
+        implName =    doc.getElementsByTagName("fsm").item(0).getAttributes().getNamedItem("implClass").getNodeValue();
+        packageName = doc.getElementsByTagName("fsm").item(0).getAttributes().getNamedItem("package").getNodeValue();
+    }
+    
     private void openInputFile() throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         doc = builder.parse(new File(inputFileName));
@@ -67,10 +97,7 @@ public class Main {
     }
 
     private void openOutputFile() throws FileNotFoundException {
-        Node FSM = doc.getElementsByTagName("fsm").item(0);
-        Node implClassNode = FSM.getAttributes().getNamedItem("implClass");
-        implName = implClassNode.getNodeValue();
-        this.printWriter = new PrintWriter(outputFolderName + "/" + implName + ".java");
+        printWriter = new PrintWriter(path + "/" + implName + ".java");
     }
 
     private static void showUsage() {
@@ -84,6 +111,8 @@ public class Main {
         Node FSM = doc.getElementsByTagName("fsm").item(0);
         Node implClassNode = FSM.getAttributes().getNamedItem("implClass");
         implName = implClassNode.getNodeValue();
+        
+        printWriter.println("package " + packageName + ";\n\n");
         printWriter.println("public class " + implName + " {");
         printWriter.println("   private STATE _state;");
         processStateNames();
