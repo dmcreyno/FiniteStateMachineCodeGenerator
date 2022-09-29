@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="ConsoleAppenderColor" target="SYSTEM_OUT">
+            <PatternLayout
+                    pattern="%style{%date{DEFAULT}}%highlight{%6p}{FATAL=bg_red, ERROR=red, INFO=cyan, WARN=yellow, TRACE=blue, DEBUG=magenta} %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="ConsoleAppenderColor"/>
+        </Root>
+    </Loggers>
+</Configuration>
