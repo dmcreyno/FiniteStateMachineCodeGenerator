@@ -1,5 +1,7 @@
 package com.cobbinterwebs.fsm.codegenerator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -14,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Main {
-
+    Logger log = LoggerFactory.getLogger(com.cobbinterwebs.fsm.codegenerator.Main.class);
     private static final int CL_INPUT_FILE_IDX = 0;
     private static final int CL_OUTPUT_FOLDER_IDX = 1;
 
@@ -29,6 +31,7 @@ public class Main {
     String inputFileName = null;
 
     String outputFolderName = null;
+    String outputFileName = null;
     static PrintWriter printWriter = null;
 
     public Main(String inputFileName, String outputFolderName) {
@@ -43,13 +46,21 @@ public class Main {
             System.exit(-1);
         }
 
-       Main generator = new Main(fileNames[CL_INPUT_FILE_IDX],fileNames[CL_OUTPUT_FOLDER_IDX]);
+        Main generator = new Main(fileNames[CL_INPUT_FILE_IDX],fileNames[CL_OUTPUT_FOLDER_IDX]);
+        generator.runGenerate();
+    }
+
+
+    /**
+     * Abstracted main code to facilitate junit testing.
+     **/
+    void runGenerate() {
         try {
-            generator.openInputFile();
-            generator.initPackageClassVars();
-            generator.initFolderStructure();
-            generator.openOutputFile();
-            generator.generateCode();
+            openInputFile();
+            initPackageClassVars();
+            initFolderStructure();
+            openOutputFile();
+            generateCode();
         } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -71,16 +82,16 @@ public class Main {
 		File filePath = new File(path);
 		
 		if(filePath.exists()) {
-			System.out.println("Directory already exists: " + filePath.getCanonicalPath());
+			log.info("Directory already exists: " + filePath.getCanonicalPath());
 			return;
 		}
 		
 		boolean status = filePath.mkdirs();
 		
 		if(status) {
-			System.out.println("Directory created successfully");
+            log.info("Directory created successfully");
 		} else {
-			System.out.println("Sorry couldnt create specified directory");
+			log.error("could not create specified directory: {}", filePath.getCanonicalPath());
 			throw new IOException();
 		}
 	}
@@ -88,16 +99,20 @@ public class Main {
 	private void initPackageClassVars() {
         implName =    doc.getElementsByTagName("fsm").item(0).getAttributes().getNamedItem("implClass").getNodeValue();
         packageName = doc.getElementsByTagName("fsm").item(0).getAttributes().getNamedItem("package").getNodeValue();
+        log.info("initPackageClassVars: implName[{}], packageName[{}]", implName, packageName);
     }
     
     private void openInputFile() throws ParserConfigurationException, IOException, SAXException {
+        log.info("open input file: {}", inputFileName);
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         doc = builder.parse(new File(inputFileName));
         doc.getDocumentElement().normalize();
     }
 
     private void openOutputFile() throws FileNotFoundException {
-        printWriter = new PrintWriter(path + "/" + implName + ".java");
+        outputFileName = path + "/" + implName + ".java";
+        log.info("open output file: {}", outputFileName);
+        printWriter = new PrintWriter(outputFileName);
     }
 
     private static void showUsage() {
@@ -108,6 +123,7 @@ public class Main {
     }
 
     void generateCode() throws ParserConfigurationException, IOException, SAXException {
+        log.info("start generating code");
         Node FSM = doc.getElementsByTagName("fsm").item(0);
         Node implClassNode = FSM.getAttributes().getNamedItem("implClass");
         implName = implClassNode.getNodeValue();
@@ -120,6 +136,7 @@ public class Main {
     }
 
     private void processStateNames() {
+        log.info("collect all the state names.");
         NodeList states = doc.getElementsByTagName("state");
         printWriter.print("   private enum STATE{");
         int stateLen = states.getLength();
@@ -127,6 +144,7 @@ public class Main {
             Node aStateNode = states.item(i);
             NamedNodeMap attributeMap = aStateNode.getAttributes();
             stateName = attributeMap.getNamedItem("name").getNodeValue();
+            log.info("\tstate[{}]", stateName);
             printWriter.print(stateName);
             if(i == stateLen - 1) {
                 continue;
@@ -144,6 +162,8 @@ public class Main {
     }
 
     private void processEventsForAState(Node stateNode) {
+        String eventName = "FEED FACE";
+        log.info("process events for a given state[{}]",stateName);
         NodeList eventNodes = stateNode.getChildNodes();
         int eventLen = eventNodes.getLength();
         for (int i = 0; i < eventLen; i++) {
@@ -151,11 +171,15 @@ public class Main {
             if (eventNode.hasAttributes()) {
                 NamedNodeMap attrs = eventNode.getAttributes();
                 String handlerNameFunction = attrs.getNamedItem("handlerFunction").getNodeValue();
+                eventName = attrs.getNamedItem("name").getNodeValue();
+                log.debug("\t\teventName[{}], handlerFunction[{}]", eventName,handlerNameFunction);
                 if(null != handleFunctionNames.get(handlerNameFunction)) {
+                    log.info("SKIPPED: process events for a given state[{}], handlerNameFunction[{}]",stateName, handlerNameFunction);
                     continue;
                 }
                 handleFunctionNames.put(handlerNameFunction, handlerNameFunction);
                 //<event name="timeout" resultState="closed" handlerFunction="Timeout"/>
+                log.info("\tgenerating code for eventName[{}]. handledFunction[{}]", eventName, handlerNameFunction);
                 printWriter.println("   public void " + attrs.getNamedItem("handlerFunction").getNodeValue() + "() throws IllegalStateException{");
                 printWriter.println("      if( this._state != STATE." + this.stateName + "){");
                 printWriter.println("         throw new IllegalStateException();");
@@ -164,5 +188,11 @@ public class Main {
                 printWriter.println("   }\n");
             }
         }
+    }
+
+    public String toString() {
+        StringBuilder buf = new StringBuilder(this.getClass().getName());
+        buf.append("[").append(this.inputFileName).append("]");
+        return buf.toString();
     }
 }
