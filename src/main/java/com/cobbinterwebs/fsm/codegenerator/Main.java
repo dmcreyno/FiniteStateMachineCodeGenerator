@@ -129,6 +129,14 @@ public class Main {
         implName = implClassNode.getNodeValue();
         
         printWriter.println("package " + packageName + ";\n\n");
+        printWriter.println("/**");
+        printWriter.println(" *" );
+        printWriter.print(" * INPUT: ");
+        printWriter.println(this.inputFileName);
+        printWriter.print(" * OUTPUT: ");
+        printWriter.println(this.outputFolderName + "/" + packageName + "." + implName + ".java");
+        printWriter.println(" *" );
+        printWriter.println("*/");
         printWriter.println("public class " + implName + " {");
         printWriter.println("   private STATE _state;");
         processStateNames();
