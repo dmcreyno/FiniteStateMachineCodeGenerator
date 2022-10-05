@@ -15,6 +15,9 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ *
+ */
 public class Main {
     Logger log = LoggerFactory.getLogger(com.cobbinterwebs.fsm.codegenerator.Main.class);
     private static final int CL_INPUT_FILE_IDX = 0;
@@ -139,7 +142,9 @@ public class Main {
         printWriter.print(" * INPUT: ");
         printWriter.println(this.inputFileName);
         printWriter.print(" * OUTPUT: ");
-        printWriter.println(this.outputFolderName + "/" + packageName + "." + implName + ".java");
+        printWriter.println(this.outputFolderName + "/");
+        printWriter.print(" * CLASS: ");
+        printWriter.println(packageName + "." + implName + ".java");
         printWriter.println(" *" );
         printWriter.println(" */");
         printWriter.println("public class " + implName + " {");
