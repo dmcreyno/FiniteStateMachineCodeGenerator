@@ -23,6 +23,7 @@ public class Main {
     String path = null;
     String packageName = null;
     String implName = null;
+    String customHandlerClass = null;
     String stateName = null;
     static Document doc = null;
 
@@ -99,6 +100,7 @@ public class Main {
 	private void initPackageClassVars() {
         implName =    doc.getElementsByTagName("fsm").item(0).getAttributes().getNamedItem("implClass").getNodeValue();
         packageName = doc.getElementsByTagName("fsm").item(0).getAttributes().getNamedItem("package").getNodeValue();
+        customHandlerClass = doc.getElementsByTagName("fsm").item(0).getAttributes().getNamedItem("customHandlerClass").getNodeValue();
         log.info("initPackageClassVars: implName[{}], packageName[{}]", implName, packageName);
     }
     
@@ -129,16 +131,20 @@ public class Main {
         implName = implClassNode.getNodeValue();
         
         printWriter.println("package " + packageName + ";\n\n");
+
         printWriter.println("/**");
+        printWriter.println(" *" );
+        printWriter.println(" * GENERATED: do not edit." );
         printWriter.println(" *" );
         printWriter.print(" * INPUT: ");
         printWriter.println(this.inputFileName);
         printWriter.print(" * OUTPUT: ");
         printWriter.println(this.outputFolderName + "/" + packageName + "." + implName + ".java");
         printWriter.println(" *" );
-        printWriter.println("*/");
+        printWriter.println(" */");
         printWriter.println("public class " + implName + " {");
         printWriter.println("   private STATE _state;");
+        printWriter.println("   private " + customHandlerClass + " customHandlerInst;");
         processStateNames();
         printWriter.println("}");
     }
@@ -191,6 +197,11 @@ public class Main {
                 printWriter.println("   public void " + attrs.getNamedItem("handlerFunction").getNodeValue() + "() throws IllegalStateException{");
                 printWriter.println("      if( this._state != STATE." + this.stateName + "){");
                 printWriter.println("         throw new IllegalStateException();");
+                printWriter.println("      }\n");
+                printWriter.println("      try {");
+                printWriter.println("         customHandlerInst." + attrs.getNamedItem("handlerFunction").getNodeValue() + "();" );
+                printWriter.println("      } catch(Throwable t) {");
+                printWriter.println("         throw new IllegalStateException(t);");
                 printWriter.println("      }\n");
                 printWriter.println("      _state = STATE." + attrs.getNamedItem("resultState").getNodeValue() + ";");
                 printWriter.println("   }\n");

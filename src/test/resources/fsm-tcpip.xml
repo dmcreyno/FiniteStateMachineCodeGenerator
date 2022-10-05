@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<fsm
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="fsm.xsd"
-        name="TCP/IP" author="DLM" version="0.1b" package="com.cobbinterwebs.fsm.tcpip" implClass="TCPIP_StateMachine">
+<fsm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://www.cobbinterwebs.com/schemas/fsm.xsd"
+        name="TCP/IP" author="Cobb Interwebs, LLC." version="0.1b"
+        package="com.cobbinterwebs.fsm.tcpip"
+        implClass="TCPIP_StateMachine"
+        customHandlerClass="com.cobbinterwebs.fsm.tcpip.custom.MyHandler">
     <state name="closed" >
         <event name="reset" resultState="closed" handlerFunction="Reset"/>
         <event name="passive_open" resultState="listen" handlerFunction="PassiveOpen"/>

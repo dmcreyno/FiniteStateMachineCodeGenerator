@@ -41,7 +41,7 @@ public class MainTestCase {
     public void testGenerator() {
         com.cobbinterwebs.fsm.codegenerator.Main app = new com.cobbinterwebs.fsm.codegenerator.Main(
                 "src/test/resources/fsm-tcpip.xml",
-                "src/generated");
+                "src/test/java");
         log.info("created instance of generator: {}", app.toString());
         app.runGenerate();
     }

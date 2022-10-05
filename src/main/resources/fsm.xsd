@@ -25,5 +25,6 @@
     <xs:attribute type="xs:string" name="version" use="optional"/>
     <xs:attribute type="xs:string" name="package" use="required"/>
     <xs:attribute type="xs:string" name="implClass" use="required"/>
+    <xs:attribute type="xs:string" name="customHandlerClass" use="required"/>
   </xs:complexType>
 </xs:schema>

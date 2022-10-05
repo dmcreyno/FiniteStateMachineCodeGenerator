@@ -3,8 +3,9 @@
 /build/
 /build/
 /bin/
-/generated/
+/generated_fsm/
 .settings
 .project
 .classpath
 **.bak
+/src/test/java/com/cobbinterwebs/fsm/tcpip/TCPIP_StateMachine.java
