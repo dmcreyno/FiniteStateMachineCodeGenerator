@@ -1,5 +1,6 @@
 package com.cobbinterwebs.fsm.codegenerator;
 
+import com.cobbinterwebs.fsm.tcpip.TCPIP_StateMachine;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Paths;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MainTestCase {
     Logger log = LoggerFactory.getLogger(MainTestCase.class);
@@ -44,5 +45,17 @@ public class MainTestCase {
                 "src/test/java");
         log.info("created instance of generator: {}", app.toString());
         app.runGenerate();
+    }
+
+    @Test
+    public void testFSM() {
+        TCPIP_StateMachine mach = new TCPIP_StateMachine();
+        assertEquals(TCPIP_StateMachine.STATE.closed, mach.getState());
+
+        mach.Closed_PassiveOpen();
+        assertEquals(TCPIP_StateMachine.STATE.listen, mach.getState());
+
+        mach.Listen_Close();
+        assertEquals(TCPIP_StateMachine.STATE.closed, mach.getState());
     }
 }

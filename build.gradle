@@ -10,13 +10,13 @@ repositories {
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
-    implementation 'org.slf4j:slf4j-api:2.0.1'
 
-    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
-    testImplementation 'org.slf4j:slf4j-simple:2.0.3'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.19.0'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.19.0'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.19.0'
+//    implementation group:  'org.freemarker', name: 'freemarker', version: '2.3.31'
 
-    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.19.0'
+
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'

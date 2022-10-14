@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration status="INFO">
+<Configuration status="INFO" monitorInterval="15">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1} - %m%n</Property>
+        <Property name="LOG_PATTERN_DETAIL">%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}.%M() - %m%n</Property>
+    </Properties>
+
     <Appenders>
-        <Console name="ConsoleAppenderColor" target="SYSTEM_OUT">
-            <PatternLayout
-                    pattern="%style{%date{DEFAULT}}%highlight{%6p}{FATAL=bg_red, ERROR=red, INFO=green, WARN=yellow, TRACE=blue, DEBUG=magenta} %m%n"/>
+        <Console name="console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN_DETAIL}"/>
         </Console>
     </Appenders>
+
     <Loggers>
-        <Root level="INFO">
-            <AppenderRef ref="ConsoleAppenderColor"/>
+        <Root level="info">
+            <AppenderRef ref="console"/>
         </Root>
+        <Logger name="om.cobbinterwebs.fsm.tcpip.custom.MyHandler" level="debug">
+            <AppenderRef ref="console"/>
+        </Logger>
     </Loggers>
 </Configuration>

@@ -149,7 +149,9 @@ public class Main {
         printWriter.println(" */");
         printWriter.println("public class " + implName + " {");
         printWriter.println("   private STATE _state;");
-        printWriter.println("   private " + customHandlerClass + " customHandlerInst;");
+        printWriter.println("   private " + customHandlerClass + " customHandlerInst = new "+ customHandlerClass + "();\n\n");
+        printWriter.println("   public " + implName + "() {\n      _state = STATE.closed;\n   }\n");
+        printWriter.println("   public STATE getState() {\n      return _state;\n   }");
         processStateNames();
         printWriter.println("}");
     }
@@ -157,7 +159,7 @@ public class Main {
     private void processStateNames() {
         log.info("collect all the state names.");
         NodeList states = doc.getElementsByTagName("state");
-        printWriter.print("   private enum STATE{");
+        printWriter.print("   public enum STATE{");
         int stateLen = states.getLength();
         for (int i = 0; i < stateLen; i++) {
             Node aStateNode = states.item(i);
