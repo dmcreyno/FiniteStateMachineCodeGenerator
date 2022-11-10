@@ -10,7 +10,6 @@
             <PatternLayout pattern="${LOG_PATTERN_DETAIL}"/>
         </Console>
     </Appenders>
-
     <Loggers>
         <Root level="info">
             <AppenderRef ref="console"/>
