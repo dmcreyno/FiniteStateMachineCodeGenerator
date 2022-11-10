@@ -39,7 +39,7 @@ public class MainTestCase {
     }
 
     @Test
-    public void testGenerator() {
+    public void testTCPIPGenerator() {
         com.cobbinterwebs.fsm.codegenerator.Main app = new com.cobbinterwebs.fsm.codegenerator.Main(
                 "src/test/resources/fsm-tcpip.xml",
                 "src/test/java");
@@ -48,7 +48,7 @@ public class MainTestCase {
     }
 
     @Test
-    public void testFSM() {
+    public void testTCPIPFSM() {
         TCPIP_StateMachine mach = new TCPIP_StateMachine();
         assertEquals(TCPIP_StateMachine.STATE.closed, mach.getState());
 
@@ -57,5 +57,14 @@ public class MainTestCase {
 
         mach.Listen_Close();
         assertEquals(TCPIP_StateMachine.STATE.closed, mach.getState());
+    }
+
+    @Test
+    public void testTicketGenerator() {
+        com.cobbinterwebs.fsm.codegenerator.Main app = new com.cobbinterwebs.fsm.codegenerator.Main(
+                "src/test/resources/fsm-troubleticket.xml",
+                "src/test/java");
+        log.info("created instance of generator: {}", app.toString());
+        app.runGenerate();
     }
 }

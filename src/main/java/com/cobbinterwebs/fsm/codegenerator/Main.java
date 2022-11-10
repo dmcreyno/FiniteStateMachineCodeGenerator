@@ -12,8 +12,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  *
@@ -28,6 +31,12 @@ public class Main {
     String implName = null;
     String customHandlerClass = null;
     String stateName = null;
+
+    /**
+     * Key := the Event Handler Name
+     * Value := list of the supported states for the Event Handler
+     */
+    Map<String, ArrayList<String>> eventStatesMap = new HashMap<>();
     static Document doc = null;
 
     Map<String, String> handleFunctionNames = new HashMap<String,String>();
@@ -63,6 +72,8 @@ public class Main {
             openInputFile();
             initPackageClassVars();
             initFolderStructure();
+            initEventHandlerStatesMap();
+            dumpEventStateMap();
             openOutputFile();
             generateCode();
         } catch (ParserConfigurationException e) {
@@ -75,6 +86,27 @@ public class Main {
             if(printWriter != null) {
                 printWriter.flush();
                 printWriter.close();
+            }
+        }
+    }
+
+    private void initEventHandlerStatesMap() {
+        NodeList eventNodeList = doc.getElementsByTagName("event");
+        int eventNodeListSize = eventNodeList.getLength();
+        log.info("Found {} events to process", eventNodeListSize);
+        for(int eventIndex = 0; eventIndex < eventNodeListSize; eventIndex++) {
+            Node eventNode = eventNodeList.item(eventIndex);
+            String eventKey = eventNode.getAttributes().getNamedItem("handlerFunction").getNodeValue();
+            log.info("Processing event state map for event: {}", eventKey);
+            ArrayList<String> stateList = eventStatesMap.get(eventKey);
+            if(null == stateList) {
+                stateList = new ArrayList<String>();
+                eventStatesMap.put(eventKey, stateList);
+            }
+            String eventStateName = eventNode.getParentNode().getAttributes().getNamedItem("name").getNodeValue();
+            log.info("Processing event state map for event: {}. Adding state {}", eventKey, eventStateName);
+            if(!stateList.contains(eventStateName)) {
+                stateList.add(eventStateName);
             }
         }
     }
@@ -182,6 +214,13 @@ public class Main {
         }
     }
 
+    /**
+     * Populates a list of states that can be processed by a specific handler.
+     */
+    private void collectStatesForEvents() {
+
+    }
+
     private void processEventsForAState(Node stateNode) {
         String eventName = "FEED FACE";
         log.info("process events for a given state[{}]",stateName);
@@ -202,6 +241,7 @@ public class Main {
                 //<event name="timeout" resultState="closed" handlerFunction="Timeout"/>
                 log.info("\tgenerating code for eventName[{}]. handledFunction[{}]", eventName, handlerNameFunction);
                 printWriter.println("   public void " + attrs.getNamedItem("handlerFunction").getNodeValue() + "() throws IllegalStateException{");
+                // TODO 10NOV2022 DLM Process the list of acceptable states from the eventStateMap instead of the current state we are processing.
                 printWriter.println("      if( this._state != STATE." + this.stateName + "){");
                 printWriter.println("         throw new IllegalStateException();");
                 printWriter.println("      }\n");
@@ -220,5 +260,23 @@ public class Main {
         StringBuilder buf = new StringBuilder(this.getClass().getName());
         buf.append("[").append(this.inputFileName).append("]");
         return buf.toString();
+    }
+
+    private void dumpEventStateMap() {
+        this.eventStatesMap.keySet().stream().iterator().forEachRemaining(new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                logAcceptableStatesForEvent(s);
+            }
+        });
+    }
+    private void logAcceptableStatesForEvent(String key) {
+        log.info("Acceptable States For Event: {}", key);
+        eventStatesMap.get(key).forEach(new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                log.info("\t\t{}", s);
+            }
+        });
     }
 }

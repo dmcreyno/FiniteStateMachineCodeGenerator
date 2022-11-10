@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<fsm xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:noNamespaceSchemaLocation="http://www.cobbinterwebs.com/schemas/fsm.xsd"
+     name="TroubleTickets" author="Cobb Interwebs, LLC." version="0.1b"
+     package="com.cobbinterwebs.fsm.troubleticket"
+     implClass="FSMFacadeImpl"
+     customHandlerClass="com.cobbinterwebs.fsm.troubleticket.custom.MyHandler">
+    <state name="new_ticket" >
+        <event name="ownerAssigned" resultState="inProgress" handlerFunction="newOwnerAssigned"/>
+        <event name="closed" resultState="closed" handlerFunction="closed"/>
+    </state>
+    <state name="closed" >
+        <event name="updatedByCustomer" resultState="inProgress" handlerFunction="reopen"/>
+        <event name="reopen" resultState="waiting" handlerFunction="reopen"/>
+    </state>
+    <state name="waiting" >
+        <event name="updatedBySupport" resultState="waiting" handlerFunction="updatedBySupport"/>
+        <event name="updatedByCustomer" resultState="inProgress" handlerFunction="updatedByCustomer"/>
+    </state>
+    <state name="inProgress" >
+        <event name="updatedByCustomer" resultState="inProgress" handlerFunction="updatedByCustomer"/>
+        <event name="resolved" resultState="closed" handlerFunction="resolved"/>
+        <event name="elapsedTimeExceeded" resultState="closed" handlerFunction="elapsedTimeExceeded"/>
+        <event name="updatedBySupport" resultState="waiting" handlerFunction="updatedBySupport"/>
+    </state>
+</fsm>
