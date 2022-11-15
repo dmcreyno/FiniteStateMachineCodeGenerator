@@ -12,10 +12,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -36,7 +33,7 @@ public class Main {
      * Key := the Event Handler Name
      * Value := list of the supported states for the Event Handler
      */
-    Map<String, ArrayList<String>> eventStatesMap = new HashMap<>();
+    Map<HandlerName, ArrayList<StateName>> eventStatesMap = new HashMap<>();
     static Document doc = null;
 
     Map<String, String> handleFunctionNames = new HashMap<String,String>();
@@ -98,15 +95,16 @@ public class Main {
             Node eventNode = eventNodeList.item(eventIndex);
             String eventKey = eventNode.getAttributes().getNamedItem("handlerFunction").getNodeValue();
             log.info("Processing event state map for event: {}", eventKey);
-            ArrayList<String> stateList = eventStatesMap.get(eventKey);
+            ArrayList<StateName> stateList = eventStatesMap.get(HandlerName.getForName(eventKey));
             if(null == stateList) {
-                stateList = new ArrayList<String>();
-                eventStatesMap.put(eventKey, stateList);
+                stateList = new ArrayList<StateName>();
+                eventStatesMap.put(HandlerName.getForName(eventKey), stateList);
             }
             String eventStateName = eventNode.getParentNode().getAttributes().getNamedItem("name").getNodeValue();
             log.info("Processing event state map for event: {}. Adding state {}", eventKey, eventStateName);
-            if(!stateList.contains(eventStateName)) {
-                stateList.add(eventStateName);
+            StateName stateName = StateName.getForName(eventStateName);
+            if(!stateList.contains(stateName)) {
+                stateList.add(stateName);
             }
         }
     }
@@ -241,8 +239,14 @@ public class Main {
                 //<event name="timeout" resultState="closed" handlerFunction="Timeout"/>
                 log.info("\tgenerating code for eventName[{}]. handledFunction[{}]", eventName, handlerNameFunction);
                 printWriter.println("   public void " + attrs.getNamedItem("handlerFunction").getNodeValue() + "() throws IllegalStateException{");
-                // TODO 10NOV2022 DLM Process the list of acceptable states from the eventStateMap instead of the current state we are processing.
-                printWriter.println("      if( this._state != STATE." + this.stateName + "){");
+                HandlerName handlerName = HandlerName.getForName(handlerNameFunction);
+                Iterator<StateName> stateNameIter = eventStatesMap.get(handlerName).iterator();
+                printWriter.print("      if( true"); // this helps with the loop below appending ands.
+                while (stateNameIter.hasNext()) {
+                    StateName stateName = stateNameIter.next();
+                    printWriter.print(" && this._state != STATE." + stateName.name);
+                }
+                printWriter.println(      "){");
                 printWriter.println("         throw new IllegalStateException();");
                 printWriter.println("      }\n");
                 printWriter.println("      try {");
@@ -263,20 +267,92 @@ public class Main {
     }
 
     private void dumpEventStateMap() {
-        this.eventStatesMap.keySet().stream().iterator().forEachRemaining(new Consumer<String>() {
+        this.eventStatesMap.keySet().stream().iterator().forEachRemaining(new Consumer<HandlerName>() {
             @Override
-            public void accept(String s) {
+            public void accept(HandlerName s) {
                 logAcceptableStatesForEvent(s);
             }
         });
     }
-    private void logAcceptableStatesForEvent(String key) {
+    private void logAcceptableStatesForEvent(HandlerName key) {
         log.info("Acceptable States For Event: {}", key);
-        eventStatesMap.get(key).forEach(new Consumer<String>() {
+        eventStatesMap.get(key).forEach(new Consumer<StateName>() {
             @Override
-            public void accept(String s) {
-                log.info("\t\t{}", s);
+            public void accept(StateName s) {
+                log.info("\t\t\t\t\t{}", s);
             }
         });
+    }
+
+    static class HandlerName {
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            HandlerName that = (HandlerName) o;
+            return name.equals(that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
+        }
+
+        private String name;
+
+        public HandlerName(String name) {
+            this.name = name;
+        }
+
+        public static HandlerName getForName(String eventKey) {
+            return new HandlerName((eventKey));
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return "HandlerName{" +
+                    "name='" + name + '\'' +
+                    '}';
+        }
+    }
+
+    static class StateName {
+        private String name;
+
+        public StateName(String name) {
+            this.name = name;
+        }
+
+        public static StateName getForName(String eventStateName) {
+            return new StateName(eventStateName);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return "StateName{" +
+                    "name='" + name + '\'' +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            StateName stateName = (StateName) o;
+            return name.equals(stateName.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
+        }
     }
 }
